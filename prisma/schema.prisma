@@ -1,0 +1,80 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model audit_logs {
+  id         String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  company_id String?    @db.Uuid
+  user_id    String?    @db.Uuid
+  action     String
+  entity     String
+  entity_id  String?    @db.Uuid
+  metadata   Json?
+  created_at DateTime   @default(now()) @db.Timestamp(6)
+  companies  companies? @relation(fields: [company_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users      users?     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([company_id], map: "idx_audit_company")
+  @@index([entity, entity_id], map: "idx_audit_entity")
+}
+
+model companies {
+  id             String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name           String
+  legal_name     String?
+  tax_id         String?
+  subdomain      String           @unique
+  schema_name    String           @unique
+  status         String           @default("active")
+  created_at     DateTime         @default(now()) @db.Timestamp(6)
+  audit_logs     audit_logs[]
+  company_plans  company_plans[]
+  user_companies user_companies[]
+}
+
+model company_plans {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  company_id String    @db.Uuid
+  plan_id    String    @db.Uuid
+  start_date DateTime  @db.Date
+  end_date   DateTime? @db.Date
+  companies  companies @relation(fields: [company_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  plans      plans     @relation(fields: [plan_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model plans {
+  id            String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name          String
+  max_users     Int?
+  features_json Json?
+  created_at    DateTime        @default(now()) @db.Timestamp(6)
+  company_plans company_plans[]
+}
+
+model user_companies {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  user_id    String    @db.Uuid
+  company_id String    @db.Uuid
+  role       String
+  created_at DateTime  @default(now()) @db.Timestamp(6)
+  companies  companies @relation(fields: [company_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users      users     @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([user_id, company_id])
+}
+
+model users {
+  id             String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email          String           @unique
+  password_hash  String
+  full_name      String
+  is_active      Boolean          @default(true)
+  created_at     DateTime         @default(now()) @db.Timestamp(6)
+  audit_logs     audit_logs[]
+  user_companies user_companies[]
+}
