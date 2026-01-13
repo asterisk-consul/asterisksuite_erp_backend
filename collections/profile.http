@@ -1,0 +1,20 @@
+@baseUrl = http://localhost:3000/api
+@json = application/json
+
+@access_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImFkbWluQHRlc3QuY29tIiwic3ViIjoiYjVjODVmMTgtNjdjZi00OTAwLWI2YTYtMjIyNGE2NTkyNjY0Iiwicm9sZXMiOltdLCJpYXQiOjE3NjgzMzgyMzAsImV4cCI6MTc2ODQyNDYzMH0.2N9zVATy4Q5lOLqyr2UPhqr6gexCm5j-n2pemtzges0
+
+### Get my profile
+GET {{baseUrl}}/profiles/me
+Authorization: Bearer {{access_token}}
+
+### Update my profile
+PATCH {{baseUrl}}/profiles/me
+Authorization: Bearer {{access_token}}
+Content-Type: {{json}}
+
+{
+  "first_name": "Agustin",
+  "last_name": "Yedro",
+  "phone": "123456789",
+  "avatar_url": "https://example.com/avatar.jpg"
+}
